@@ -325,6 +325,47 @@ quest13 :: String -> CWires
 quest13 =
   combineCircuit (M.empty) . map parseCExpr . splitOn '\n'
 
+-- day 8
+
+backSlash :: CharParser st Int
+backSlash = string "\\\\" >> return 1
+
+quote :: CharParser st Int
+quote = string "\\\"" >> return 1
+
+ascii :: CharParser st Int
+ascii = string "\\x" >> count 2 hexDigit >> return 1
+
+
+oneChar :: CharParser st Int
+oneChar = try backSlash
+          <|> try quote
+          <|> try ascii
+          <|> try (string "\"" >> return 0) 
+          <|> (letter >> return 1)
+
+unEscapeLength :: String -> Int
+unEscapeLength s =
+  case parse (many1 oneChar) "" s of
+       Left _   -> error "Invalid string"
+       Right ns -> sum ns
+
+unEscape :: String -> String
+unEscape = read
+
+quest15 :: IO Int
+quest15 =
+  do text <- readFile "string08.txt"
+     return
+       $ sum . map (\s -> length s - unEscapeLength s)
+       $ splitOn '\n' text
+
+quest16 :: IO Int
+quest16 =
+  do text <- readFile "string08.txt"
+     return
+       $ sum . map (\s -> length (show s) - length s)
+       $ splitOn '\n' text
 
 
 
